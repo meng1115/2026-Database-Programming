@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Wear | 簡易服飾店</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">資料庫程設 期末專題</div>
+        <nav>
+            <ul>
+                <li><a href="#">首頁</a></li>
+                <li><a href="#products">所有商品</a></li>
+                <li><a href="#">關於我們</a></li>
+            </ul>
+        </nav>
+        <div class="cart" onclick="toggleCart()">
+            🛒 購物車 (<span id="cart-count">0</span>)
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>夏季新品 質感上市</h1>
+        <p>探索我們最新的服飾系列，展現你的獨特風格，全館滿千免運。</p>
+        <a href="#products" class="btn-primary">立即選購</a>
+    </section>
+
+    <section id="products" class="products-section">
+        <h2>熱門商品</h2>
+        <div class="product-grid" id="product-grid"></div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026資料庫程式-僅作程式練習展示用途。</p>
+    </footer>
+
+    <div id="cart-modal" class="cart-modal">
+        <div class="cart-content">
+            <span class="close-btn" onclick="toggleCart()">&times;</span>
+            <h2>我的購物車</h2>
+            <div id="cart-items-list">
+                </div>
+            <div class="cart-total">
+                總計: NT$ <span id="cart-total-price">0</span>
+            </div>
+            <button class="checkout-btn" onclick="checkout()">結帳下單</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

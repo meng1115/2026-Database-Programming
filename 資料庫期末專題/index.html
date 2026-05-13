@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>校園快閃咖啡館 - 點餐系統</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>●校園快閃咖啡館</h1>
+        <p>新鮮現做，香醇美味，快速取餐</p>
+    </header>
+
+    <div class="main-container">
+        <div id="menu-area" class="menu-grid"></div>
+
+        <div class="cart-sidebar">
+            <h2>購物車</h2>
+            <p>即時更新您的訂單</p>
+            <div id="cart-list"></div>
+            
+            <div class="user-inputs" style="margin-top: 20px;">
+                <input type="text" id="cust-name" placeholder="請輸入姓名" style="width: 100%; margin-bottom: 8px;">
+                <input type="text" id="cust-phone" placeholder="請輸入電話" style="width: 100%;">
+            </div>
+
+            <div class="total-section">
+                總計金額: <span id="total-price" style="color: #e76f51;">NT$ 0</span>
+            </div>
+            <button id="btn-submit" disabled onclick="sendOrder()">提交訂單</button>
+        </div>
+    </div>
+
+    <div id="order-modal" class="modal">
+        <div class="modal-content">
+            <div style="font-size: 50px; color: #27ae60;">✔</div>
+            <h2 style="color: #27ae60;">訂單送出成功！</h2>
+            <p>您的訂單已成功建立並送達廚房</p>
+            <p>您的取餐號碼</p>
+            <h1 id="order-id" style="font-size: 4rem; color: #e76f51; margin: 15px 0;">#000</h1>
+            <div style="background: #fdf2f2; padding: 15px; border-radius: 8px; text-align: left;">
+                <strong>取餐須知：</strong>
+                <ul style="padding-left: 20px; font-size: 0.9rem;">
+                    <li>請保存好您的取餐號碼</li>
+                    <li>當號碼被叫到時，請出示此畫面</li>
+                    <li>預估等候時間：10-15分鐘</li>
+                </ul>
+            </div>
+            <button onclick="location.reload()" style="margin-top: 20px;">繼續點餐</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

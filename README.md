@@ -10,4 +10,4 @@ git config --global user.email "[acs112114@gm.ntcu.edu.tw]"
 
 git config --global user.email "[acs112115@gm.ntcu.edu.tw]"
 
-git config --global user.email "[acs112149@gm.ntcu.edu.tw]"
+git config --global user.email "[zoey770421@gmail.com]"

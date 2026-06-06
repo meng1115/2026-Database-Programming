@@ -11,28 +11,35 @@ let myCart = [];
 let currentSelectedProduct = null;
 let currentModalQty = 1;
 
-// 會員系統相關變數
-let authMode = 'login'; // 'login' 或 'register'
+let authMode = 'login'; 
 let currentUser = null;
 
 const STORAGE_KEY = 'coffee_orders_team130';
 const MEMBER_KEY = 'coffee_members_team130';
 const SESSION_KEY = 'current_login_user_team130';
 
-// ==========================================
-// 會員系統核心邏輯
-// ==========================================
+// 統一控制 Modal 開關的函數
+function toggleModal(modalId, show) {
+    const targetModal = document.getElementById(modalId);
+    if (targetModal) {
+        targetModal.style.display = show ? 'flex' : 'none';
+    }
+}
 
-// 檢查是否已有登入紀錄 (記住會員)
+// ==========================================
+// 會員認證模組
+// ==========================================
 function checkLoginSession() {
     const savedUser = localStorage.getItem(SESSION_KEY);
     if (savedUser) {
         currentUser = JSON.parse(savedUser);
         loginSuccess(currentUser);
+    } else {
+        // 如果沒登入快取，才強制彈出登入視窗
+        toggleModal('auth-modal', true);
     }
 }
 
-// 切換 登入 / 註冊 介面模式
 function switchAuthMode() {
     const title = document.getElementById('auth-title');
     const primaryBtn = document.getElementById('btn-auth-primary');
@@ -54,66 +61,43 @@ function switchAuthMode() {
     }
 }
 
-// 處理登入或註冊送出
 function handleAuthSubmit() {
     const phone = document.getElementById('auth-phone').value.trim();
     const name = document.getElementById('auth-name').value.trim();
 
-    if (!phone) {
-        alert('請輸入手機號碼作為帳號！');
-        return;
-    }
+    if (!phone) { alert('請輸入手機號碼！'); return; }
 
     let members = JSON.parse(localStorage.getItem(MEMBER_KEY) || '[]');
 
     if (authMode === 'register') {
-        if (!name) {
-            alert('請填寫姓名以完成註冊！');
-            return;
+        if (!name) { alert('請填寫姓名以完成註冊！'); return; }
+        if (members.some(m => m.phone === phone)) {
+            alert('此電話已被註冊，已為您自動切換至登入模式。');
+            authMode = 'register'; switchAuthMode(); return;
         }
-        // 檢查手機號碼是否重複
-        const isExist = members.some(m => m.phone === phone);
-        if (isExist) {
-            alert('此手機號碼已被註冊，請直接登入！');
-            authMode = 'register';
-            switchAuthMode();
-            return;
-        }
-        // 寫入新會員
         const newMember = { phone, name };
         members.push(newMember);
         localStorage.setItem(MEMBER_KEY, JSON.stringify(members));
         currentUser = newMember;
-        alert('註冊成功！');
     } else {
-        // 登入模式：查核手機號碼
         const user = members.find(m => m.phone === phone);
-        if (!user) {
-            alert('找不到該會員帳號，請切換至註冊新會員！');
-            return;
-        }
+        if (!user) { alert('找不到此會員檔案，請切換至註冊！'); return; }
         currentUser = user;
     }
 
-    // 記住登入狀態
     localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
     loginSuccess(currentUser);
 }
 
-// 登入成功處理
 function loginSuccess(user) {
-    document.getElementById('auth-modal').style.display = 'none';
+    toggleModal('auth-modal', false);
     document.getElementById('current-user-badge').style.display = 'block';
     document.getElementById('user-display-name').innerText = user.name;
-    
-    // 自動帶入購物車欄位
     document.getElementById('cust-name').value = user.name;
     document.getElementById('cust-phone').value = user.phone;
-    
     renderCart();
 }
 
-// 登出 / 切換帳號
 function logoutUser() {
     localStorage.removeItem(SESSION_KEY);
     currentUser = null;
@@ -122,20 +106,12 @@ function logoutUser() {
     document.getElementById('cust-phone').value = '';
     document.getElementById('auth-phone').value = '';
     document.getElementById('auth-name').value = '';
-    
-    // 重新彈出登入視窗
-    authMode = 'login';
-    document.getElementById('auth-title').innerText = '會員登入';
-    document.getElementById('btn-auth-primary').innerText = '登入';
-    document.getElementById('auth-switch-text').innerText = '首次點餐？';
-    document.getElementById('auth-switch-link').innerText = '註冊新會員';
-    document.getElementById('auth-modal').style.display = 'flex';
+    toggleModal('auth-modal', true);
 }
 
 // ==========================================
-// 原有點餐系統優化整合
+// 點餐與客製化核心
 // ==========================================
-
 function initMenu() {
     const area = document.getElementById('menu-area');
     area.innerHTML = menuData.map(item => `
@@ -172,11 +148,12 @@ function addDessertToCart(product) {
     renderCart();
 }
 
+// 開啟規格控制視窗
 function openCustomModal(item) {
     currentSelectedProduct = item;
     currentModalQty = 1;
     document.getElementById('modal-qty-display').innerText = currentModalQty;
-    document.getElementById('custom-product-name').innerText = `${item.name} - 客製化調整`;
+    document.getElementById('custom-product-name').innerText = `${item.name} - 客製化規格調整`;
     
     if (item.type === 'coffee') {
         document.getElementById('espresso-group').style.display = 'block';
@@ -188,7 +165,7 @@ function openCustomModal(item) {
         document.getElementById('espresso-group').style.display = 'block';
         document.getElementById('milk-group').style.display = 'block';
     }
-    document.getElementById('custom-modal').style.display = 'flex';
+    toggleModal('custom-modal', true);
 }
 
 function changeModalQty(amount) {
@@ -198,7 +175,7 @@ function changeModalQty(amount) {
 }
 
 function closeCustomModal() {
-    document.getElementById('custom-modal').style.display = 'none';
+    toggleModal('custom-modal', false);
     currentSelectedProduct = null;
 }
 
@@ -218,14 +195,8 @@ function confirmAddToCart() {
     let singlePrice = currentSelectedProduct.price;
     let customDetails = [temp];
 
-    if (espresso === "特濃") {
-        singlePrice += 15;
-        customDetails.push("特濃");
-    }
-    if (currentSelectedProduct.type !== 'coffee' && milk === "燕麥奶") {
-        singlePrice += 20;
-        customDetails.push("燕麥奶");
-    }
+    if (espresso === "特濃") { singlePrice += 15; customDetails.push("特濃"); }
+    if (currentSelectedProduct.type !== 'coffee' && milk === "燕麥奶") { singlePrice += 20; customDetails.push("燕麥奶"); }
 
     const customKey = customDetails.join(' / ');
     const existingIndex = myCart.findIndex(item => item.id === currentSelectedProduct.id && item.customString === customKey);
@@ -280,15 +251,15 @@ function renderCart() {
     const total = myCart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
     totalDisplay.innerText = `NT$ ${total}`;
     
-    // 登入狀態下且購物車有東西即可送出
+    // 如果沒有登入會員，則不能點擊送出
     btn.disabled = (myCart.length === 0 || !currentUser);
 }
 
+// ==========================================
+// 訂單追蹤與雙向狀態監聽模組
+// ==========================================
 function sendOrder() {
-    if (!currentUser) {
-        alert('請先登入會員再提交訂單！');
-        return;
-    }
+    if (!currentUser) { alert('請先登入會員再提交訂單！'); return; }
 
     const orderNum = Math.floor(Math.random() * 900) + 100;
     const orderData = {
@@ -298,23 +269,79 @@ function sendOrder() {
         items: [...myCart],
         total: myCart.reduce((sum, i) => sum + (i.price * i.quantity), 0),
         time: new Date().toLocaleTimeString(),
-        status: '待處理'
+        status: '待處理' 
     };
 
     const orders = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     orders.push(orderData);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
 
+    // 保存當前最新單號到本地快取，使「進度追蹤」有基礎單號可以查核
+    localStorage.setItem('my_last_order_id', orderNum);
+
     document.getElementById('order-id').innerText = `#${orderNum}`;
-    document.getElementById('order-modal').style.display = 'flex';
+    toggleModal('order-modal', true);
+}
+
+// 修正：修正讀取與比對邏輯，確保追蹤視窗完全正常渲染
+function openOrderStatusModal() {
+    const lastOrderId = localStorage.getItem('my_last_order_id');
+    const container = document.getElementById('tracker-container');
+    
+    if (!lastOrderId) {
+        container.innerHTML = '<p style="color:#999; text-align:center; padding: 20px 0;">您目前在此裝置尚無進行中的訂單紀錄。</p>';
+        toggleModal('status-tracker-modal', true);
+        return;
+    }
+
+    const activeOrders = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const matchedOrder = activeOrders.find(o => o.id == lastOrderId);
+
+    if (!matchedOrder) {
+        // 如果在進行中佇列找不到了，就代表後台點擊了「已完成」並被歸檔移出
+        container.innerHTML = `
+            <div style="text-align:center; padding:10px;">
+                <h4 style="color:#27ae60; margin:0 0 5px 0;">🎉 訂單號碼 #${lastOrderId}</h4>
+                <div style="background:#e8f8f5; color:#27ae60; padding:10px; border-radius:6px; font-weight:bold; display:inline-block; margin-bottom:10px;">餐點已完成 / 已取餐</div>
+                <p style="font-size:0.85rem; color:#666; margin:0;">感謝您的光臨，請至櫃檯領取您香醇的咖啡！</p>
+            </div>`;
+    } else {
+        // 訂單還在準備中，動態讀取後台最新變更的 status 狀態字串
+        // 確保 openOrderStatusModal 內的渲染語法結構長這樣：
+let currentStatus = matchedOrder.status || '待處理';
+let step1Class = "step-active", step2Class = "", step3Class = "";
+
+if (currentStatus === "製作中") {
+    step2Class = "step-active";
+} else if (currentStatus === "請取餐") {
+    step2Class = "step-active";
+    step3Class = "step-active";
+}
+
+container.innerHTML = `
+    <div style="background:#fdfbf7; border:1px solid #f3ebe1; padding:15px; border-radius:8px;">
+        <p style="margin:0 0 10px 0;"><strong>當前追蹤單號：</strong> <span style="color:#e76f51; font-weight:bold;">#${matchedOrder.id}</span></p>
+        <p style="margin:0 0 15px 0;"><strong>下單時間：</strong> ${matchedOrder.time}</p>
+        
+        <div class="tracker-steps">
+            <div class="step ${step1Class}"><div>1</div>待處理</div>
+            <div class="step ${step2Class}"><div>2</div>製作中</div>
+            <div class="step ${step3Class}"><div>3</div>請取餐</div>
+        </div>
+        
+        <p style="text-align:center; font-size:0.85rem; color:#888; margin:25px 0 0 0;">(提示：此頁面隨後台變更同步重新計算更新)</p>
+    </div>`;
+    }
+
+    toggleModal('status-tracker-modal', true);
 }
 
 function closeModal() {
-    document.getElementById('order-modal').style.display = 'none';
+    toggleModal('order-modal', false);
     myCart = [];
     renderCart();
 }
 
-// 頁面初始化
+// 初始化
 initMenu();
 checkLoginSession();

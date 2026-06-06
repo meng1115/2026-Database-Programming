@@ -4,6 +4,70 @@
     <meta charset="UTF-8">
     <title>校園快閃咖啡館 - 點餐系統</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* 補上進度條與客製化面板的專屬美化樣式 */
+        .tracker-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin: 30px 0 20px 0;
+            padding: 0 10px;
+        }
+        .tracker-steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 40px;
+            right: 40px;
+            height: 4px;
+            background-color: #e0e0e0;
+            z-index: 1;
+        }
+        .step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            flex: 1;
+            font-size: 0.9rem;
+            color: #999;
+            font-weight: bold;
+            transition: all 0.4s ease;
+        }
+        .step div {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            color: #666;
+            line-height: 40px;
+            text-align: center;
+            margin: 0 auto 10px auto;
+            font-size: 1.1rem;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: all 0.4s ease;
+        }
+        .step.step-active { color: #e76f51; }
+        .step.step-active div {
+            background-color: #e76f51;
+            color: white;
+            transform: scale(1.15);
+            box-shadow: 0 4px 10px rgba(231, 111, 81, 0.35);
+        }
+        
+        /* 飲品規格下拉選單樣式 */
+        .custom-select-box {
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 0.9rem;
+            color: #444;
+            background-color: #fff;
+            outline: none;
+        }
+        .custom-select-box:focus { border-color: #6f4e37; }
+    </style>
 </head>
 <body>
     <div id="auth-modal" class="modal">
@@ -34,13 +98,19 @@
     </div>
 
     <header>
-        <h1>●校園快閃咖啡館</h1>
-        <p>新鮮現做，香醇美味，快速取餐</p>
+        <h1>校園快閃咖啡館</h1>
         
+  
         <div style="margin-top: 15px; display: flex; justify-content: center; gap: 12px;">
             <button onclick="openOrderStatusModal()" style="width: auto; background-color: #e76f51; padding: 8px 16px;">🔍 追蹤我的訂單進度</button>
             <button onclick="toggleModal('faq-modal', true)" style="width: auto; background-color: #2c3e50; padding: 8px 16px;">💡 商品原物料溯源 / 常見問題</button>
         </div>
+
+	<div style="margin-top: 10px; text-align: center;">
+    <span id="login-small-badge" onclick="handleSmallBadgeClick()" style="font-size: 0.9rem; color: #7f8c8d; cursor: pointer; text-decoration: underline; font-weight: 500; transition: 0.2s;">
+        [會員登入]
+    </span>
+</div>
 
         <div id="current-user-badge" style="margin-top: 15px; font-weight: bold; color: #6f4e37; display: none;">
             歡迎回來，<span id="user-display-name"></span>！ 
@@ -74,13 +144,34 @@
             
             <div class="custom-group" id="temp-group">
                 <label><strong>溫度調整：</strong></label>
-                <div class="radio-options">
-                    <label><input type="radio" name="temp-option" value="冰" checked> 冰</label>
-                    <label><input type="radio" name="temp-option" value="熱"> 熱</label>
-                </div>
+                <select id="modal-temp-select" class="custom-select-box" onchange="onModalTempChange()">
+                    <option value="熱">熱 (Hot)</option>
+                    <option value="冰">冰 (Ice)</option>
+                </select>
             </div>
 
-            <div class="custom-group" id="espresso-group">
+            <div class="custom-group" id="ice-group" style="display: none;">
+                <label><strong>冰塊量：</strong></label>
+                <select id="modal-ice-select" class="custom-select-box">
+                    <option value="正常冰">正常冰</option>
+                    <option value="少冰">少冰</option>
+                    <option value="微冰">微冰</option>
+                    <option value="去冰">去冰</option>
+                </select>
+            </div>
+
+            <div class="custom-group" id="sweet-group" style="display: none;">
+                <label><strong>甜度調整：</strong></label>
+                <select id="modal-sweet-select" class="custom-select-box">
+                    <option value="正常糖">正常糖</option>
+                    <option value="7分糖">7分糖</option>
+                    <option value="半糖">半糖</option>
+                    <option value="3分糖">3分糖</option>
+                    <option value="無糖">無糖</option>
+                </select>
+            </div>
+
+            <div class="custom-group" id="espresso-group" style="display: none;">
                 <label><strong>咖啡濃縮度：</strong></label>
                 <div class="radio-options">
                     <label><input type="radio" name="espresso-option" value="標準" checked> 標準</label>
@@ -88,7 +179,7 @@
                 </div>
             </div>
 
-            <div class="custom-group" id="milk-group">
+            <div class="custom-group" id="milk-group" style="display: none;">
                 <label><strong>牛奶類別：</strong></label>
                 <div class="radio-options">
                     <label><input type="radio" name="milk-option" value="全脂鮮乳" checked> 全脂鮮乳</label>
@@ -123,14 +214,12 @@
     <div id="faq-modal" class="modal">
         <div class="modal-content text-left" style="width: 460px; max-height: 80vh; overflow-y: auto;">
             <h3 style="margin-top: 0; color: #6f4e37; border-bottom: 2px solid #6f4e37; padding-bottom: 8px;">💡 商品原物料溯源與常見問題</h3>
-            
             <div class="custom-group">
                 <p><strong>Q1: 咖啡豆的來源地與烘焙度是什麼？</strong></p>
                 <span style="font-size: 0.9rem; color: #555; display: block; line-height: 1.5;">
                     本快閃店全品項採用 <strong>100% 阿拉比卡咖啡豆</strong>，產地來自衣索比亞及哥倫比亞。烘焙度採取中度烘焙，完美展現堅果與淡淡柑橘果香風味。
                 </span>
             </div>
-
             <div class="custom-group">
                 <p><strong>Q2: 牛奶類別使用的是哪一牌鮮乳？</strong></p>
                 <span style="font-size: 0.9rem; color: #555; display: block; line-height: 1.5;">
@@ -138,7 +227,6 @@
                     【燕麥奶】加價選用國際咖啡師專用「<strong>OATLY 燕麥奶</strong>」，口感醇厚，適合全素食者。
                 </span>
             </div>
-
             <div class="custom-group">
                 <p><strong>Q3: 甜點是現做的嗎？內含什麼原物料？</strong></p>
                 <span style="font-size: 0.9rem; color: #555; display: block; line-height: 1.5;">
@@ -146,7 +234,6 @@
                     【巧克力餅乾】採用比利時 <strong>70% 苦甜巧克力豆</strong> 現烤製成，外酥內軟。
                 </span>
             </div>
-
             <button onclick="toggleModal('faq-modal', false)" style="background: #2c3e50; margin-top: 10px;">明白了</button>
         </div>
     </div>

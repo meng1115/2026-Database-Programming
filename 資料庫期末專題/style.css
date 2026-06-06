@@ -1,7 +1,4 @@
-/* ==========================================
-   全域修正與基礎設定
-   ========================================== */
-* {
+{
     box-sizing: border-box; /* 確保 padding 不會撐破框框 */
 }
 
@@ -18,6 +15,17 @@ header {
     border-bottom: 2px solid #eee;
     padding-bottom: 10px;
 }
+
+header h1 {
+    font-family: 'Noto Serif TC', "Microsoft JhengHei", serif; /* 切換為具有人文溫度的襯線內文/楷體風格 */
+    font-size: 2.8rem; /* 放大標題級別 */
+    color: #000000;
+    margin: 0 0 8px 0;
+    letter-spacing: 3px; /* 字距微調，營造精品高級感 */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 
+                 0 0 20px rgba(245, 235, 224, 0.2); /* 微光暈陰影效果 */
+}
+
 
 /* 這裡是左右分欄的關鍵 */
 .main-container {

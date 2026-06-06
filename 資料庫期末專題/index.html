@@ -6,8 +6,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="auth-modal" class="modal" style="display: flex;">
-        <div class="modal-content text-left">
+    <div id="auth-modal" class="modal">
+        <div class="modal-content text-left" style="position: relative;">
+            <span class="modal-close-x" onclick="toggleModal('auth-modal', false)">✖</span>
             <h2 id="auth-title" style="margin-top: 0; color: #6f4e37; text-align: center; border-bottom: 2px solid #6f4e37; padding-bottom: 8px;">會員登入</h2>
             
             <div id="auth-form">
@@ -35,7 +36,13 @@
     <header>
         <h1>●校園快閃咖啡館</h1>
         <p>新鮮現做，香醇美味，快速取餐</p>
-        <div id="current-user-badge" style="margin-top: 10px; font-weight: bold; color: #6f4e37; display: none;">
+        
+        <div style="margin-top: 15px; display: flex; justify-content: center; gap: 12px;">
+            <button onclick="openOrderStatusModal()" style="width: auto; background-color: #e76f51; padding: 8px 16px;">🔍 追蹤我的訂單進度</button>
+            <button onclick="toggleModal('faq-modal', true)" style="width: auto; background-color: #2c3e50; padding: 8px 16px;">💡 商品原物料溯源 / 常見問題</button>
+        </div>
+
+        <div id="current-user-badge" style="margin-top: 15px; font-weight: bold; color: #6f4e37; display: none;">
             歡迎回來，<span id="user-display-name"></span>！ 
             <button onclick="logoutUser()" style="width: auto; padding: 2px 8px; font-size: 0.8rem; background: #95a5a6; margin-left: 10px;">切換帳號</button>
         </div>
@@ -50,8 +57,8 @@
             <div id="cart-list" class="cart-items-container"></div>
             
             <div class="user-inputs" style="margin-top: 20px;">
-                <input type="text" id="cust-name" placeholder="請輸入姓名" readonly style="background: #f0f0f0; cursor: not-allowed;">
-                <input type="text" id="cust-phone" placeholder="請輸入電話" readonly style="background: #f0f0f0; cursor: not-allowed;">
+                <input type="text" id="cust-name" placeholder="姓名 (請先由上方登入)" readonly style="background: #f0f0f0; cursor: not-allowed;">
+                <input type="text" id="cust-phone" placeholder="電話 (請先由上方登入)" readonly style="background: #f0f0f0; cursor: not-allowed;">
             </div>
 
             <div class="total-section">
@@ -105,11 +112,50 @@
         </div>
     </div>
 
+    <div id="status-tracker-modal" class="modal">
+        <div class="modal-content text-left">
+            <h3 style="margin-top: 0; color: #6f4e37; border-bottom: 2px solid #6f4e37; padding-bottom: 8px;">📋 我的訂單即時進度</h3>
+            <div id="tracker-container" style="margin: 15px 0;"></div>
+            <button onclick="toggleModal('status-tracker-modal', false)" style="background: #95a5a6; margin-top: 10px;">關閉視窗</button>
+        </div>
+    </div>
+
+    <div id="faq-modal" class="modal">
+        <div class="modal-content text-left" style="width: 460px; max-height: 80vh; overflow-y: auto;">
+            <h3 style="margin-top: 0; color: #6f4e37; border-bottom: 2px solid #6f4e37; padding-bottom: 8px;">💡 商品原物料溯源與常見問題</h3>
+            
+            <div class="custom-group">
+                <p><strong>Q1: 咖啡豆的來源地與烘焙度是什麼？</strong></p>
+                <span style="font-size: 0.9rem; color: #555; display: block; line-height: 1.5;">
+                    本快閃店全品項採用 <strong>100% 阿拉比卡咖啡豆</strong>，產地來自衣索比亞及哥倫比亞。烘焙度採取中度烘焙，完美展現堅果與淡淡柑橘果香風味。
+                </span>
+            </div>
+
+            <div class="custom-group">
+                <p><strong>Q2: 牛奶類別使用的是哪一牌鮮乳？</strong></p>
+                <span style="font-size: 0.9rem; color: #555; display: block; line-height: 1.5;">
+                    【全脂鮮乳】選用台灣在地優質「<strong>鮮乳坊</strong>」100% 純鮮乳，無添加物。<br>
+                    【燕麥奶】加價選用國際咖啡師專用「<strong>OATLY 燕麥奶</strong>」，口感醇厚，適合全素食者。
+                </span>
+            </div>
+
+            <div class="custom-group">
+                <p><strong>Q3: 甜點是現做的嗎？內含什麼原物料？</strong></p>
+                <span style="font-size: 0.9rem; color: #555; display: block; line-height: 1.5;">
+                    【起司蛋糕】採用紐西蘭進口乳酪、法國發酵奶油及新鮮雞蛋手工減糖製作。<br>
+                    【巧克力餅乾】採用比利時 <strong>70% 苦甜巧克力豆</strong> 現烤製成，外酥內軟。
+                </span>
+            </div>
+
+            <button onclick="toggleModal('faq-modal', false)" style="background: #2c3e50; margin-top: 10px;">明白了</button>
+        </div>
+    </div>
+
     <div id="order-modal" class="modal">
         <div class="modal-content">
             <div style="font-size: 50px; color: #27ae60;">✔</div>
             <h2 style="color: #27ae60;">訂單送出成功！</h2>
-            <p>您的訂單已成功建立，請前往櫃檯結帳</p>
+            <p>您的訂單已成功建立，請前往櫃檯結帳並等候叫號</p>
             <p>您的取餐號碼</p>
             <h1 id="order-id" style="font-size: 4rem; color: #e76f51; margin: 15px 0;">#000</h1>
             <div style="background: #fdf2f2; padding: 15px; border-radius: 8px; text-align: left;">

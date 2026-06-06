@@ -204,3 +204,67 @@ button:disabled {
     margin: 0;
     width: auto;
 }
+
+/* ==========================================
+   訂單進度條智慧動態樣式 (Tracker Steps)
+   ========================================== */
+.tracker-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    margin: 30px 0 20px 0;
+    padding: 0 10px;
+}
+
+/* 貫穿後方的灰色基底進度線 */
+.tracker-steps::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    right: 40px;
+    height: 4px;
+    background-color: #e0e0e0;
+    z-index: 1;
+}
+
+/* 單個步驟的容器 */
+.step {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    flex: 1;
+    font-size: 0.9rem;
+    color: #999;
+    font-weight: bold;
+    transition: all 0.4s ease;
+}
+
+/* 步驟數字圓圈預設樣式 (未渲染灰色) */
+.step div {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    color: #666;
+    line-height: 40px;
+    text-align: center;
+    margin: 0 auto 10px auto;
+    font-size: 1.1rem;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: all 0.4s ease;
+}
+
+/* 🔥 高亮啟動樣式 (當前進度狀態) */
+.step.step-active {
+    color: #e76f51; /* 快閃店的主題橘色 */
+}
+
+.step.step-active div {
+    background-color: #e76f51;
+    color: white;
+    transform: scale(1.15); /* 微放大視覺焦點 */
+    box-shadow: 0 4px 10px rgba(231, 111, 81, 0.35);
+}

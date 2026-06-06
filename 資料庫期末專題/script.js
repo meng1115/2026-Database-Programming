@@ -18,7 +18,6 @@ const STORAGE_KEY = 'coffee_orders_team130';
 const MEMBER_KEY = 'coffee_members_team130';
 const SESSION_KEY = 'current_login_user_team130';
 
-// 統一控制 Modal 開關的函數
 function toggleModal(modalId, show) {
     const targetModal = document.getElementById(modalId);
     if (targetModal) {
@@ -27,15 +26,24 @@ function toggleModal(modalId, show) {
 }
 
 // ==========================================
-// 會員認證模組
+// 會員認證模組（含頂部小字動態渲染）
 // ==========================================
 function checkLoginSession() {
     const savedUser = localStorage.getItem(SESSION_KEY);
+    const badge = document.getElementById('login-small-badge');
+    
     if (savedUser) {
         currentUser = JSON.parse(savedUser);
         loginSuccess(currentUser);
     } else {
-        // 如果沒登入快取，才強制彈出登入視窗
+        // 未登入時，確保灰色小字正常顯示
+        if (badge) {
+            badge.innerHTML = `會員登入`;
+            badge.style.display = "inline-block"; // 顯示小字
+            badge.style.color = "#7f8c8d";
+            badge.style.textDecoration = "underline";
+            badge.style.cursor = "pointer";
+        }
         toggleModal('auth-modal', true);
     }
 }
@@ -89,12 +97,24 @@ function handleAuthSubmit() {
     loginSuccess(currentUser);
 }
 
+function handleSmallBadgeClick() {
+    if (!currentUser) {
+        toggleModal('auth-modal', true);
+    }
+}
+
 function loginSuccess(user) {
     toggleModal('auth-modal', false);
     document.getElementById('current-user-badge').style.display = 'block';
     document.getElementById('user-display-name').innerText = user.name;
     document.getElementById('cust-name').value = user.name;
     document.getElementById('cust-phone').value = user.phone;
+    
+    // ✨ 核心修改：登入成功後，直接讓這行小字徹底消失
+    const badge = document.getElementById('login-small-badge');
+    if (badge) {
+        badge.style.display = "none"; 
+    }
     renderCart();
 }
 
@@ -106,11 +126,21 @@ function logoutUser() {
     document.getElementById('cust-phone').value = '';
     document.getElementById('auth-phone').value = '';
     document.getElementById('auth-name').value = '';
+    
+    // ✨ 同步恢復：登出之後，重新把可點擊的灰色 [會員登入] 小字喚醒顯示
+    const badge = document.getElementById('login-small-badge');
+    if (badge) {
+        badge.innerHTML = `會員登入`;
+        badge.style.display = "inline-block"; // 重新顯示
+        badge.style.color = "#7f8c8d";
+        badge.style.textDecoration = "underline";
+        badge.style.cursor = "pointer";
+    }
     toggleModal('auth-modal', true);
 }
 
 // ==========================================
-// 點餐與客製化核心
+// 點餐與客製化核心（含智慧甜度/冰塊連動邏輯）
 // ==========================================
 function initMenu() {
     const area = document.getElementById('menu-area');
@@ -148,13 +178,22 @@ function addDessertToCart(product) {
     renderCart();
 }
 
-// 開啟規格控制視窗
+// 開啟規格客製化彈窗
 function openCustomModal(item) {
     currentSelectedProduct = item;
     currentModalQty = 1;
     document.getElementById('modal-qty-display').innerText = currentModalQty;
     document.getElementById('custom-product-name').innerText = `${item.name} - 客製化規格調整`;
     
+    // 預設將選單重設為「熱」，隱藏冰塊選擇
+    document.getElementById('modal-temp-select').value = "熱";
+    document.getElementById('ice-group').style.display = "none";
+
+    // 甜度調整核心判定：拿鐵咖啡、卡布奇諾、抹茶拿鐵才開啟甜度
+    const isMilky = ['拿鐵咖啡', '卡布奇諾', '抹茶拿鐵'].includes(item.name);
+    document.getElementById('sweet-group').style.display = isMilky ? 'block' : 'none';
+    
+    // 原物料進階加價判定
     if (item.type === 'coffee') {
         document.getElementById('espresso-group').style.display = 'block';
         document.getElementById('milk-group').style.display = 'none';
@@ -168,6 +207,17 @@ function openCustomModal(item) {
     toggleModal('custom-modal', true);
 }
 
+// 智慧動態連動：當選擇「冰」才顯示冰塊調整；選「熱」自動隱藏
+function onModalTempChange() {
+    const tempValue = document.getElementById('modal-temp-select').value;
+    const iceGroup = document.getElementById('ice-group');
+    if (tempValue === "冰") {
+        iceGroup.style.display = "block";
+    } else {
+        iceGroup.style.display = "none";
+    }
+}
+
 function changeModalQty(amount) {
     currentModalQty += amount;
     if (currentModalQty < 1) currentModalQty = 1;
@@ -179,10 +229,29 @@ function closeCustomModal() {
     currentSelectedProduct = null;
 }
 
+// 組合客製化規格並寫入購物車
 function confirmAddToCart() {
     if (!currentSelectedProduct) return;
 
-    const temp = document.querySelector('input[name="temp-option"]:checked').value;
+    const temp = document.getElementById('modal-temp-select').value;
+    let customDetails = [];
+
+    // 1. 處理冰塊與溫度字串
+    if (temp === "冰") {
+        const ice = document.getElementById('modal-ice-select').value;
+        customDetails.push(`${temp}(${ice})`);
+    } else {
+        customDetails.push(temp);
+    }
+
+    // 2. 處理甜度字串 (只有特定品項需要加入)
+    const isMilky = ['拿鐵咖啡', '卡布奇諾', '抹茶拿鐵'].includes(currentSelectedProduct.name);
+    if (isMilky) {
+        const sweet = document.getElementById('modal-sweet-select').value;
+        customDetails.push(sweet);
+    }
+
+    // 3. 處理原有咖啡特濃與牛奶調整
     let espresso = "標準";
     if (currentSelectedProduct.type !== 'matcha') {
         espresso = document.querySelector('input[name="espresso-option"]:checked').value;
@@ -193,8 +262,6 @@ function confirmAddToCart() {
     }
 
     let singlePrice = currentSelectedProduct.price;
-    let customDetails = [temp];
-
     if (espresso === "特濃") { singlePrice += 15; customDetails.push("特濃"); }
     if (currentSelectedProduct.type !== 'coffee' && milk === "燕麥奶") { singlePrice += 20; customDetails.push("燕麥奶"); }
 
@@ -250,13 +317,11 @@ function renderCart() {
 
     const total = myCart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
     totalDisplay.innerText = `NT$ ${total}`;
-    
-    // 如果沒有登入會員，則不能點擊送出
     btn.disabled = (myCart.length === 0 || !currentUser);
 }
 
 // ==========================================
-// 訂單追蹤與雙向狀態監聽模組
+// 訂單建立與即時動態更新
 // ==========================================
 function sendOrder() {
     if (!currentUser) { alert('請先登入會員再提交訂單！'); return; }
@@ -276,14 +341,11 @@ function sendOrder() {
     orders.push(orderData);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
 
-    // 保存當前最新單號到本地快取，使「進度追蹤」有基礎單號可以查核
     localStorage.setItem('my_last_order_id', orderNum);
-
     document.getElementById('order-id').innerText = `#${orderNum}`;
     toggleModal('order-modal', true);
 }
 
-// 修正：修正讀取與比對邏輯，確保追蹤視窗完全正常渲染
 function openOrderStatusModal() {
     const lastOrderId = localStorage.getItem('my_last_order_id');
     const container = document.getElementById('tracker-container');
@@ -298,7 +360,6 @@ function openOrderStatusModal() {
     const matchedOrder = activeOrders.find(o => o.id == lastOrderId);
 
     if (!matchedOrder) {
-        // 如果在進行中佇列找不到了，就代表後台點擊了「已完成」並被歸檔移出
         container.innerHTML = `
             <div style="text-align:center; padding:10px;">
                 <h4 style="color:#27ae60; margin:0 0 5px 0;">🎉 訂單號碼 #${lastOrderId}</h4>
@@ -306,33 +367,29 @@ function openOrderStatusModal() {
                 <p style="font-size:0.85rem; color:#666; margin:0;">感謝您的光臨，請至櫃檯領取您香醇的咖啡！</p>
             </div>`;
     } else {
-        // 訂單還在準備中，動態讀取後台最新變更的 status 狀態字串
-        // 確保 openOrderStatusModal 內的渲染語法結構長這樣：
-let currentStatus = matchedOrder.status || '待處理';
-let step1Class = "step-active", step2Class = "", step3Class = "";
-
-if (currentStatus === "製作中") {
-    step2Class = "step-active";
-} else if (currentStatus === "請取餐") {
-    step2Class = "step-active";
-    step3Class = "step-active";
-}
-
-container.innerHTML = `
-    <div style="background:#fdfbf7; border:1px solid #f3ebe1; padding:15px; border-radius:8px;">
-        <p style="margin:0 0 10px 0;"><strong>當前追蹤單號：</strong> <span style="color:#e76f51; font-weight:bold;">#${matchedOrder.id}</span></p>
-        <p style="margin:0 0 15px 0;"><strong>下單時間：</strong> ${matchedOrder.time}</p>
+        let currentStatus = matchedOrder.status || '待處理';
+        let step1Class = "step-active", step2Class = "", step3Class = "";
         
-        <div class="tracker-steps">
-            <div class="step ${step1Class}"><div>1</div>待處理</div>
-            <div class="step ${step2Class}"><div>2</div>製作中</div>
-            <div class="step ${step3Class}"><div>3</div>請取餐</div>
-        </div>
-        
-        <p style="text-align:center; font-size:0.85rem; color:#888; margin:25px 0 0 0;">(提示：此頁面隨後台變更同步重新計算更新)</p>
-    </div>`;
+        if (currentStatus === "製作中") {
+            step2Class = "step-active";
+        } else if (currentStatus === "請取餐") {
+            step2Class = "step-active";
+            step3Class = "step-active";
+        }
+
+        container.innerHTML = `
+            <div style="background:#fdfbf7; border:1px solid #f3ebe1; padding:15px; border-radius:8px;">
+                <p style="margin:0 0 10px 0;"><strong>當前追蹤單號：</strong> <span style="color:#e76f51; font-weight:bold;">#${matchedOrder.id}</span></p>
+                <p style="margin:0 0 15px 0;"><strong>下單時間：</strong> ${matchedOrder.time}</p>
+                
+                <div class="tracker-steps">
+                    <div class="step ${step1Class}"><div>1</div>待處理</div>
+                    <div class="step ${step2Class}"><div>2</div>製作中</div>
+                    <div class="step ${step3Class}"><div>3</div>請取餐</div>
+                </div>
+                <p style="text-align:center; font-size:0.85rem; color:#888; margin:15px 0 0 0;">(提示：此頁面隨後台變更同步重新計算更新)</p>
+            </div>`;
     }
-
     toggleModal('status-tracker-modal', true);
 }
 
@@ -342,6 +399,16 @@ function closeModal() {
     renderCart();
 }
 
-// 初始化
+// ==========================================
+// 系統高頻動態更新初始化區
+// ==========================================
 initMenu();
 checkLoginSession();
+
+// 每 1 秒動態巡檢：若進度彈窗正開啟，立刻重抓後台資料進行高畫質步驟更新
+setInterval(() => {
+    const trackerModal = document.getElementById('status-tracker-modal');
+    if (trackerModal && trackerModal.style.display === 'flex') {
+        openOrderStatusModal();
+    }
+}, 1000);

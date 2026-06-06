@@ -7,180 +7,568 @@
         /* 確保框框計算包含 padding，防止溢出 */
         * { box-sizing: border-box; }
         
-        body { 
-            font-family: "Microsoft JhengHei", sans-serif; 
-            background-color: #f0f2f5; 
-            margin: 0; 
-            padding: 20px; 
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: #fdfbf7; /* 溫馨極淺米色 */
+            margin: 0;
+            padding: 20px;
+            color: #3d3d3d;
         }
 
-        header { 
-            background-color: #2c3e50; 
-            color: white; 
-            padding: 15px 25px; 
-            border-radius: 8px; 
-            margin-bottom: 20px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+        header {
+            background-color: #6f4e37; /* 經典深咖啡色 */
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(111, 78, 55, 0.15);
         }
 
-        /* 訂單列表網格佈局 (題目 a) */
-        .order-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 20px; 
+        header strong {
+            font-size: 1.2rem;
+            letter-spacing: 1px;
         }
 
-        /* 訂單卡片樣式 */
-        .order-card { 
-            background: white; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-            border-top: 5px solid #6f4e37; 
-            overflow: hidden; 
-            display: flex; 
-            flex-direction: column; 
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
-        .order-header { 
-            padding: 12px 15px; 
-            background: #f8f9fa; 
-            border-bottom: 1px solid #eee; 
-            display: flex; 
-            justify-content: space-between; 
-        }
-
-        .order-body { 
-            padding: 15px; 
-            flex-grow: 1; 
-        }
-
-        .item-row { 
-            display: flex; 
-            justify-content: space-between; 
-            padding: 5px 0; 
-            border-bottom: 1px dashed #eee; 
-            font-size: 0.9rem; 
-        }
-
-        .total-price {
-            text-align: right;
-            margin-top: 10px;
+        /* 進入商業營收大數據控制台的按鈕 */
+        .btn-server-entry {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px dashed #f5ebe0;
+            color: #f5ebe0;
+            padding: 6px 14px;
+            font-family: "Microsoft JhengHei", sans-serif;
+            font-size: 0.85rem;
             font-weight: bold;
-            color: #e76f51;
-            font-size: 1.1rem;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+        .btn-server-entry:hover {
+            background: #f5ebe0;
+            color: #6f4e37;
+            box-shadow: 0 0 12px rgba(245,235,224,0.4);
         }
 
-        /* 智能狀態管理腳部 (題目 c) */
-        .status-footer { 
-            padding: 15px; 
-            background: #fafafa; 
-            display: flex; 
-            gap: 10px; 
-        }
-
-        .btn { 
-            flex: 1; 
-            border: none; 
-            padding: 10px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            color: white; 
-            transition: 0.3s; 
-        }
-
-        .btn-process { background-color: #f39c12; }
-        .btn-done { background-color: #27ae60; }
-        
         .refresh-tag {
             font-size: 0.8rem;
-            background: rgba(255,255,255,0.2);
-            padding: 4px 10px;
-            border-radius: 4px;
+            background: rgba(255,255,255,0.18);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-weight: 500;
         }
+
+        .section-title {
+            font-size: 1.15rem;
+            color: #6f4e37;
+            margin: 25px 0 15px 0;
+            border-left: 4px solid #e76f51;
+            padding-left: 10px;
+            font-weight: bold;
+        }
+
+        /* 訂單列表網格佈局 */
+        .order-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 5px solid #6f4e37;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid #f3ebe1;
+        }
+
+        .order-header {
+            padding: 12px 15px;
+            background: #fdfbf7;
+            border-bottom: 1px solid #f3ebe1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-body {
+            padding: 15px;
+            flex-grow: 1;
+        }
+
+        .item-list-container {
+            border-top: 1px solid #eee; 
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+            font-size: 0.95rem;
+        }
+
+        .item-details { display: flex; flex-direction: column; }
+        .item-spec { color: #d35400; font-size: 0.8rem; margin-top: 3px; font-weight: 500; }
+        .item-qty-display { font-weight: bold; color: #6f4e37; background: #fdfbf7; padding: 2px 8px; border-radius: 4px; border: 1px solid #f3ebe1; }
+        .total-price { text-align: right; margin-top: 15px; font-weight: bold; color: #e76f51; font-size: 1.2rem; }
+
+        /* 按鈕風格 */
+        .status-footer { padding: 15px; background: #fdfbf7; display: flex; gap: 10px; border-top: 1px solid #f3ebe1; }
+        .btn { border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
+        .btn:hover { opacity: 0.9; }
+        .btn-process { background-color: #f39c12; width: 100%; }
+        .btn-done { background-color: #27ae60; width: 100%; }
+        
+        /* 會員操作相關微調 */
+        .btn-edit { background-color: #2980b9; padding: 4px 8px; font-size: 0.8rem; margin-right: 5px; }
+        .btn-danger { background-color: #ff4d4d; padding: 4px 8px; font-size: 0.8rem; }
+        
+        /* 彈窗按鈕風格 */
+        .btn-modal-action { background-color: #6f4e37; border: 1px solid #6f4e37; color: white; padding: 8px 16px; border-radius: 6px; }
+        .btn-modal-action:hover { background-color: #553c2a; }
+        .btn-modal-reset { background-color: #c0392b; border: 1px solid #c0392b; color: white; padding: 8px 16px; border-radius: 6px; }
+        .btn-modal-reset:hover { background-color: #a93226; }
+        .btn-modal-close { background-color: #95a5a6; color: white; padding: 8px 16px; border-radius: 6px; }
+        .btn-modal-close:hover { background-color: #7f8c8d; }
+
+        /* 會員管理表格 */
+        .member-table-container { background: white; border-radius: 12px; border: 1px solid #f3ebe1; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow-x: auto; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #f3ebe1; }
+        th { background-color: #fdfbf7; color: #6f4e37; font-weight: bold; }
+        tr:hover { background-color: #fffdfa; }
+
+        /* ================================================================= */
+        /* BI 大數據分析控制台彈出視窗                                      */
+        /* ================================================================= */
+        .backend-overlay {
+            display: none; 
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(61, 53, 47, 0.6); 
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .server-room {
+            width: 100%;
+            max-width: 800px;
+            background: white; 
+            color: #3d3d3d;
+            padding: 30px;
+            box-shadow: 0 10px 35px rgba(111, 78, 55, 0.25);
+            border-radius: 16px;
+            border: 3px solid #6f4e37;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .status-indicator {
+            border-bottom: 2px solid #f3ebe1;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .status-indicator h2 { margin: 0 0 5px 0; color: #6f4e37; font-size: 1.4rem; }
+        
+        /* 彈窗內部的 2x2 商業數據網格 */
+        .bi-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .bi-metric-card {
+            background: #fdfbf7;
+            border: 1px solid #f3ebe1;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .bi-metric-card h5 { margin: 0 0 6px 0; color: #777; font-size: 0.9rem; }
+        .bi-metric-card .bi-value { font-size: 1.4rem; font-weight: bold; color: #e76f51; }
+
+        /* 排行榜樣式 */
+        .rank-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 25px 0;
+        }
+        .rank-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: #fdfbf7;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            border: 1px solid #f3ebe1;
+            border-left: 4px solid #e76f51;
+        }
+        
+        .btn-panel { display: flex; gap: 10px; border-top: 1px solid #f3ebe1; padding-top: 15px; align-items: center; }
     </style>
 </head>
 <body>
 
     <header>
-        <div><strong>🛠 店家後台管理</strong> | 快閃咖啡館</div>
-        <div class="refresh-tag">● 即時更新中 (每 30 秒自動刷新)</div>
+        <div><strong>🛠 店家後台管理看板</strong> | 快閃咖啡館</div>
+        <div class="header-controls">
+            <button class="btn-server-entry" onclick="toggleBackendServer(true)"> 數據資料 </button>
+            <div class="refresh-tag">● 每 30 秒自動刷新</div>
+        </div>
     </header>
 
-    <div class="order-grid" id="admin-order-list">
+    <div class="section-title">即時顧客點餐明細</div>
+    <div class="order-grid" id="admin-order-list"></div>
+
+    <div class="section-title">會員帳號資料維護版面</div>
+    <div class="member-table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>會員姓名</th>
+                    <th>聯絡電話 (帳號)</th>
+                    <th>消費紀錄 (次數)</th>
+                    <th>累積點數 (50元計1點)</th>
+                    <th>管理操作</th>
+                </tr>
+            </thead>
+            <tbody id="admin-member-list"></tbody>
+        </table>
+    </div>
+
+    <div class="backend-overlay" id="backend-system-modal">
+        <div class="server-room">
+            <div class="status-indicator">
+                <h2>📊 營收數據分析控制台</h2>
+            </div>
+            
+            <div class="bi-metrics-grid">
+                <div class="bi-metric-card">
+                    <h5>今日總營業額</h5>
+                    <div class="bi-value" id="bi-revenue">NT$ 0</div>
+                </div>
+                <div class="bi-metric-card">
+                    <h5>今日總訂單數</h5>
+                    <div class="bi-value" id="bi-order-count">0 筆</div>
+                </div>
+                <div class="bi-metric-card">
+                    <h5>待製作 / 待出貨</h5>
+                    <div class="bi-value" id="bi-pending-count" style="color: #f39c12;">0 筆</div>
+                </div>
+                <div class="bi-metric-card">
+                    <h5>平均客單價 (ATV)</h5>
+                    <div class="bi-value" id="bi-atv" style="color: #27ae60;">NT$ 0</div>
+                </div>
+            </div>
+
+            <div style="font-weight: bold; color: #6f4e37; margin-bottom: 8px; font-size: 0.95rem;">🔥 當日熱銷單品排行榜 (Top Sales Items)</div>
+            <div class="rank-list" id="bi-ranking-list"></div>
+
+            <div class="btn-panel">
+                <button class="btn btn-modal-reset" onclick="settleAndResetData()">⚠️ 結算並完全重置營收大數據</button>
+                <button class="btn btn-modal-action" onclick="triggerAggregation()" style="margin-left: 10px;">刷新數據</button>
+                <button class="btn btn-modal-close" onclick="toggleBackendServer(false)" style="margin-left: auto;">關閉 [X]</button>
+            </div>
         </div>
+    </div>
 
     <script>
-        // 必須與點餐頁面使用的名稱完全一致
         const STORAGE_KEY = 'coffee_orders_team130';
+        const HISTORY_KEY = 'coffee_history_team130'; 
+        const MEMBER_KEY = 'coffee_members_team130';
 
-        // 即時更新：每 30 秒自動刷新 (題目 d)
-        setInterval(() => { 
-            console.log("自動同步訂單...");
-            renderOrders(); 
+        // 每 30 秒自動重新更新數據
+        setInterval(() => {
+            renderOrders();
+            renderMembers();
+            triggerAggregation(); 
         }, 30000);
 
-        // 渲染訂單與詳情 (題目 a, b)
+        // 1. 渲染即時訂單列表
         function renderOrders() {
             const orders = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             const container = document.getElementById('admin-order-list');
             
             if (orders.length === 0) {
-                container.innerHTML = '<p style="text-align:center; grid-column:1/-1; color:#999; padding:50px;">目前尚無新訂單</p>';
+                container.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#999; padding:40px; background:white; border-radius:12px; border:1px solid #f3ebe1;">目前尚無待處理點單</div>';
                 return;
             }
 
-            // 依照下單順序排列 (題目要求)
             container.innerHTML = orders.map(order => `
                 <div class="order-card">
-                    <div class="order-header">
-                        <span style="font-weight:bold;">#${order.id}</span>
-                        <span style="font-size:0.8rem; color:#666;">${order.time}</span>
-                    </div>
-                    <div class="order-body">
-                        <div style="margin-bottom:10px;">👤 <strong>${order.customer || '訪客'}</strong></div>
-                        <div style="font-size:0.85rem; color:#666; margin-bottom:10px;">📞 ${order.phone || '未提供'}</div>
-                        <div style="border-top:1px solid #eee; padding-top:10px;">
-                            ${order.items.map(i => `
-                                <div class="item-row">
-                                    <span>${i.name}</span>
-                                    <span>x1</span>
-                                </div>
-                            `).join('')}
+                    <div>
+                        <div class="order-header">
+                            <span style="font-weight:bold; font-size:1.15rem; color:#6f4e37;">#${order.id}</span>
+                            <span style="font-size:0.85rem; color:#888;">${order.time}</span>
                         </div>
-                        <div class="total-price">總計: NT$ ${order.total}</div>
+                        <div class="order-body">
+                            <div style="margin-bottom:6px;">👤 客戶名稱: <strong>${order.name || '未綁定'}</strong></div>
+                            <div style="font-size:0.85rem; color:#666; margin-bottom:10px;">📞 聯絡電話: ${order.phone || '未提供'}</div>
+                            
+                            <div class="item-list-container">
+                                ${order.items.map(i => `
+                                    <div class="item-row">
+                                        <div class="item-details">
+                                            <strong>${i.name}</strong>
+                                            <span class="item-spec"> 規格: ${i.customString || '固定規格'}</span>
+                                        </div>
+                                        <span class="item-qty-display">x${i.quantity}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
                     </div>
-                    <div class="status-footer">
-                        <button class="btn btn-process" onclick="updateStatus(this)">開始製作</button>
-                        <button class="btn btn-done" onclick="finishOrder(${order.id})">已完成</button>
+                    <div>
+                        <div style="padding: 0 15px;"><div class="total-price">總計金額: NT$ ${order.total}</div></div>
+                        <div class="status-footer">
+                            <button class="btn btn-process" onclick="updateStatus(this)">開始製作</button>
+                            <button class="btn btn-done" onclick="finishOrder(${order.id})">已完成</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        // 智能狀態切換邏輯
+        // 2. 渲染會員控制面板
+        function renderMembers() {
+            const members = JSON.parse(localStorage.getItem(MEMBER_KEY) || '[]');
+            const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            const activeOrders = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const tbody = document.getElementById('admin-member-list');
+
+            if (members.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">目前尚無註冊會員資料</td></tr>';
+                return;
+            }
+
+            const allOrders = [...history, ...activeOrders];
+
+            tbody.innerHTML = members.map(member => {
+                const memberOrders = allOrders.filter(o => o.phone === member.phone);
+                const orderCount = memberOrders.length;
+                const totalSpent = memberOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+                
+                // 50 元累計 1 點
+                const points = Math.floor(totalSpent / 50);
+
+                return `
+                    <tr>
+                        <td><strong>${member.name}</strong></td>
+                        <td>${member.phone}</td>
+                        <td>${orderCount} 次</td>
+                        <td style="color:#e76f51; font-weight:bold;">${points} 點</td>
+                        <td>
+                            <button class="btn btn-edit" onclick="editMemberDetails('${member.phone}', '${member.name}')">✏️ 修改資料</button>
+                            <button class="btn btn-danger" onclick="deleteMember('${member.phone}')">🗑 刪除會員檔案</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 升級：同時支援修改姓名與電話的邏輯
+        function editMemberDetails(oldPhone, currentName) {
+            // 1. 先詢問姓名
+            const newName = prompt(`【步驟 1/2】請輸入會員新的姓名：`, currentName);
+            if (newName === null) return; // 使用者按取消就整個中斷
+            
+            // 2. 再詢問電話
+            const newPhone = prompt(`【步驟 2/2】請輸入會員新的電話號碼：`, oldPhone);
+            if (newPhone === null) return; // 使用者按取消
+
+            const finalName = newName.trim();
+            const finalPhone = newPhone.trim();
+
+            // 防呆確認：兩者皆不能為空字串
+            if (finalName !== "" && finalPhone !== "") {
+                let members = JSON.parse(localStorage.getItem(MEMBER_KEY) || '[]');
+                
+                // 如果修改了電話，需要檢查新電話是否已存在於其他會員中（避免帳號衝突）
+                if (oldPhone !== finalPhone) {
+                    const isExist = members.some(m => m.phone === finalPhone);
+                    if (isExist) {
+                        alert(`❌ 修改失敗：電話號碼 「${finalPhone}」 已被其他註冊會員使用！`);
+                        return;
+                    }
+                }
+
+                const memberIndex = members.findIndex(m => m.phone === oldPhone);
+                if (memberIndex !== -1) {
+                    // 更新會員本身的資料
+                    members[memberIndex].name = finalName;
+                    members[memberIndex].phone = finalPhone;
+                    localStorage.setItem(MEMBER_KEY, JSON.stringify(members));
+                    
+                    // 【精準連動處理】同步更新當前未處理點單中的對應帳號資訊
+                    let activeOrders = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                    activeOrders.forEach(o => {
+                        if (o.phone === oldPhone) {
+                            o.name = finalName;
+                            o.phone = finalPhone;
+                        }
+                    });
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(activeOrders));
+
+                    // 備註：若是歷史完成紀錄 (HISTORY_KEY) 有需要也可以連動更改，這邊依循系統架構以核心即時點單與會員檔為主
+
+                    alert(`🎉 會員資料修改成功！\n姓名：${finalName}\n電話：${finalPhone}`);
+                    renderMembers();
+                    renderOrders();
+                    triggerAggregation();
+                }
+            } else {
+                alert(`⚠️ 姓名或電話欄位不能為空，資料未作任何變更。`);
+            }
+        }
+
+        function deleteMember(phone) {
+            if (confirm(`確定要完全刪除此會員帳號 (${phone}) 的檔案嗎？`)) {
+                let members = JSON.parse(localStorage.getItem(MEMBER_KEY) || '[]');
+                members = members.filter(m => m.phone !== phone);
+                localStorage.setItem(MEMBER_KEY, JSON.stringify(members));
+                renderMembers();
+                triggerAggregation();
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            if(e.target && e.target.classList.contains('btn-process')) {
+                updateStatus(e.target);
+            }
+        });
+
         function updateStatus(btn) {
             if (btn.innerText === "開始製作") {
                 btn.innerText = "製作中";
-                btn.style.backgroundColor = "#d35400"; // 顏色轉深橘代表正在製作
+                btn.style.backgroundColor = "#d35400"; 
+            } else if (btn.innerText === "製作中") {
+                btn.innerText = "請取餐";
+                btn.style.backgroundColor = "#2980b9"; 
             }
         }
 
-        // 完成訂單並移除
         function finishOrder(id) {
-            if (confirm('確認訂單已準備好取餐並從待處理清單移除？')) {
-                let orders = JSON.parse(localStorage.getItem(STORAGE_KEY));
-                // 過濾掉已完成的單號
+            if (confirm(`確認單號 #${id} 咖啡餐點已完成取餐？`)) {
+                let orders = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+                let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+               
+                const finishedOrder = orders.find(o => o.id === id);
+                if (finishedOrder) {
+                    finishedOrder.status = 'completed';
+                    history.push(finishedOrder);
+                    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+                }
+
                 orders = orders.filter(o => o.id !== id);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
-                renderOrders(); // 立即重新渲染畫面
+                
+                renderOrders();      
+                renderMembers(); 
+                triggerAggregation(); 
             }
         }
 
-        // 初始化頁面
-        window.onload = renderOrders;
+        // 3. 智慧數據分析中心邏輯 (BI Engine)
+        function triggerAggregation() {
+            const orders = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            const allOrders = [...orders, ...history];
+
+            // 計算四大商業指標
+            const grandTotal = allOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+            const totalOrdersCount = allOrders.length;
+            const pendingCount = orders.length;
+            const atv = totalOrdersCount > 0 ? Math.round(grandTotal / totalOrdersCount) : 0;
+
+            // 同步數據至彈出視窗(Modal)內的元素
+            document.getElementById('bi-revenue').innerText = `NT$ ${grandTotal}`;
+            document.getElementById('bi-order-count').innerText = `${totalOrdersCount} 筆`;
+            document.getElementById('bi-pending-count').innerText = `${pendingCount} 筆`;
+            document.getElementById('bi-atv').innerText = `NT$ ${atv}`;
+
+            // 熱銷商品動態排行統計
+            const itemMap = {};
+            allOrders.forEach(o => {
+                if (o.items && Array.isArray(o.items)) {
+                    o.items.forEach(i => {
+                        itemMap[i.name] = (itemMap[i.name] || 0) + Number(i.quantity || 1);
+                    });
+                }
+            });
+
+            const sortedItems = Object.keys(itemMap).map(name => {
+                return { name: name, qty: itemMap[name] };
+            }).sort((a, b) => b.qty - a.qty);
+
+            const rankContainer = document.getElementById('bi-ranking-list');
+            if (sortedItems.length === 0) {
+                rankContainer.innerHTML = '<p style="font-size:0.85rem; color:#999; margin:0;">目前尚無商品銷售排行數據</p>';
+            } else {
+                rankContainer.innerHTML = sortedItems.slice(0, 3).map((item, index) => `
+                    <div class="rank-item">
+                        <span><strong>No.${index + 1}</strong> — ${item.name}</span>
+                        <span style="font-weight:bold; color:#e76f51;">已售出 ${item.qty} 份</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 4. 結算營收並清空重置數據 (確保不會清空會員面板)
+        function settleAndResetData() {
+            const orders = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            const allOrders = [...orders, ...history];
+            const grandTotal = allOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+
+            // 第一層提示
+            if (confirm(`【本日營收結算確認】\n\n今日累積總營業額為：NT$ ${grandTotal}\n確定要結算並清空「所有即時訂單」與「歷史銷售紀錄」嗎？\n(此操作將無法復原，註冊會員名單與檔案將會安全保留)`)) {
+                
+                // 第二層提示
+                if (confirm(`⚠️ 警告：這將會完全重置後台營收大數據看板與所有訂單狀態，您確定要繼續嗎？`)) {
+                    // 只清空未處理點單與歷史訂單紀錄
+                    localStorage.removeItem(STORAGE_KEY);
+                    localStorage.removeItem(HISTORY_KEY);
+
+                    alert(`結算完成！銷貨營收大數據已完全重置，會員維護名單已安全保留。`);
+                    
+                    // 重新渲染畫面與數據
+                    renderOrders();
+                    renderMembers();
+                    triggerAggregation();
+                    toggleBackendServer(false); 
+                }
+            }
+        }
+
+        // 切換控制台顯示狀態
+        function toggleBackendServer(show) {
+            const modal = document.getElementById('backend-system-modal');
+            modal.style.display = show ? 'flex' : 'none';
+            if (show) triggerAggregation(); 
+        }
+
+        window.onload = function() {
+            renderOrders();
+            renderMembers();
+            triggerAggregation();
+        };
     </script>
 </body>
 </html>

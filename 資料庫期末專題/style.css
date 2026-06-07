@@ -1,4 +1,4 @@
-{
+*{
     box-sizing: border-box; /* 確保 padding 不會撐破框框 */
 }
 
@@ -275,4 +275,15 @@ button:disabled {
     color: white;
     transform: scale(1.15); /* 微放大視覺焦點 */
     box-shadow: 0 4px 10px rgba(231, 111, 81, 0.35);
+}
+
+/* 修正會員登入關閉按鈕的滑鼠游標樣式 */
+.modal-close-x {
+    cursor: pointer;
+    user-select: none; /* 避免滑鼠點太快變成選取文字 */
+    transition: color 0.2s;
+}
+
+.modal-close-x:hover {
+    color: #e76f51; /* 額外加個滑鼠懸停變色效果，提升質感 */
 }

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>校園快閃咖啡館 - 點餐系統</title>
+    <link rel="stylesheet" href="style.css">
+
+
+
+    <style>
+        /* 補上進度條與客製化面板的專屬美化樣式 */
+        .tracker-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin: 30px 0 20px 0;
+            padding: 0 10px;
+        }
+        .tracker-steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 40px;
+            right: 40px;
+            height: 4px;
+            background-color: #e0e0e0;
+            z-index: 1;
+        }
+        .step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            flex: 1;
+            font-size: 0.9rem;
+            color: #999;
+            font-weight: bold;
+            transition: all 0.4s ease;
+        }
+        .step div {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            color: #666;
+            line-height: 40px;
+            text-align: center;
+            margin: 0 auto 10px auto;
+            font-size: 1.1rem;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: all 0.4s ease;
+        }
+        .step.step-active { color: #e76f51; }
+        .step.step-active div {
+            background-color: #e76f51;
+            color: white;
+            transform: scale(1.15);
+            box-shadow: 0 4px 10px rgba(231, 111, 81, 0.35);
+        }
+        
+        /* 飲品規格下拉選單樣式 */
+        .custom-select-box {
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 0.9rem;
+            color: #444;
+            background-color: #fff;
+            outline: none;
+        }
+        .custom-select-box:focus { border-color: #6f4e37; }
+    </style>
+</head>
+<body>
+    <div id="auth-modal" class="modal">
+        <div class="modal-content text-left" style="position: relative;">
+            <span class="modal-close-x" onclick="toggleModal('auth-modal', false)">✖</span>
+            <h2 id="auth-title" style="margin-top: 0; color: #6f4e37; text-align: center; border-bottom: 2px solid #6f4e37; padding-bottom: 8px;">會員登入</h2>
+            
+            <div id="auth-form">
+    <div class="custom-group">
+        <label><strong>帳號 (手機號碼)：</strong></label>
+        <input type="text" id="auth-phone" placeholder="請輸入手機號碼">
+    </div>
+    <div class="custom-group">
+        <label><strong>密碼：</strong></label>
+        <input type="password" id="auth-password" placeholder="請輸入密碼">
+    </div>
+    <div class="custom-group" id="auth-name-group" style="display: none;">
+        <label><strong>姓名 (僅註冊需要)：</strong></label>
+        <input type="text" id="auth-name" placeholder="請輸入真實姓名">
+    </div>
+    <div class="custom-group">
+        <label><strong>驗證碼：</strong></label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
+            <div id="captcha-code-box" style="background: #e76f51; color: white; padding: 8px 15px; font-family: monospace; font-size: 1.2rem; font-weight: bold; letter-spacing: 4px; border-radius: 4px; user-select: none;">ABCD</div>
+            <button type="button" onclick="generateCaptcha()" style="width: auto; padding: 6px 12px; font-size: 0.85rem; background: #95a5a6;">換一張</button>
+        </div>
+        <input type="text" id="auth-captcha-input" placeholder="請輸入上方驗證碼 (不分大小寫)">
+    </div>
+    
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button id="btn-auth-primary" onclick="handleAuthSubmit()" style="background: #6f4e37;">登入</button>
+    </div>
+    
+    <p style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #666;">
+        <span id="auth-switch-text">首次點餐？</span> 
+        <a href="javascript:void(0)" id="auth-switch-link" onclick="switchAuthMode()" style="color: #e76f51; font-weight: bold; text-decoration: none;">註冊新會員</a>
+    </p>
+</div>
+
+
+
+
+        </div>
+    </div>
+
+    <header>
+        <h1>校園快閃咖啡館</h1>
+        
+  
+        <div style="margin-top: 15px; display: flex; justify-content: center; gap: 12px;">
+            <button onclick="openOrderStatusModal()" style="width: auto; background-color: #e76f51; padding: 8px 16px;">🔍 追蹤我的訂單進度</button>
+            <button onclick="toggleModal('faq-modal', true)" style="width: auto; background-color: #2c3e50; padding: 8px 16px;">快閃咖啡廳的 AI 智能助理</button>
+        </div>
+
+	<div style="margin-top: 10px; text-align: center;">
+    <span id="login-small-badge" onclick="handleSmallBadgeClick()" style="font-size: 0.9rem; color: #7f8c8d; cursor: pointer; text-decoration: underline; font-weight: 500; transition: 0.2s;">
+        [會員登入]
+    </span>
+</div>
+
+        <div id="current-user-badge" style="margin-top: 15px; font-weight: bold; color: #6f4e37; display: none;">
+            歡迎回來，<span id="user-display-name"></span>！ 
+            <button onclick="logoutUser()" style="width: auto; padding: 2px 8px; font-size: 0.8rem; background: #95a5a6; margin-left: 10px;">切換帳號</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div id="menu-area" class="menu-grid"></div>
+
+        <div class="cart-sidebar">
+            <h2>購物車</h2>
+            <p>即時更新您的訂單</p>
+            <div id="cart-list" class="cart-items-container"></div>
+            
+            <div class="user-inputs" style="margin-top: 20px;">
+                <input type="text" id="cust-name" placeholder="姓名 (請先由上方登入)" readonly style="background: #f0f0f0; cursor: not-allowed;">
+                <input type="text" id="cust-phone" placeholder="電話 (請先由上方登入)" readonly style="background: #f0f0f0; cursor: not-allowed;">
+            </div>
+
+
+<div id="point-redeem-section" style="margin-top: 15px; background: #fdfbf7; padding: 12px; border-radius: 8px; border: 1px solid #f3ebe1; font-size: 0.9rem; display: none;">
+    <div style="color: #6f4e37; font-weight: bold; margin-bottom: 5px;">儲值點數折抵現金</div>
+    <div>您目前可用點數：<span id="user-available-points" style="color: #e76f51; font-weight: bold;">0</span> 點</div>
+    <div style="font-size: 0.8rem; color: #888; margin-bottom: 8px;">(每 5 點可折抵 NT$ 1 元，最多可折抵 <span id="user-max-discount">0</span> 元)</div>
+    
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <span>折抵金額：NT$</span>
+        <div style="display: inline-flex; align-items: center; gap: 5px;">
+            <button type="button" onclick="changeDiscountAmount(-1)" class="btn-qty" style="width:25px; height:25px;">-</button>
+            <span id="discount-amount-display" style="font-weight: bold; min-width: 30px; text-align: center;">0</span>
+            <button type="button" onclick="changeDiscountAmount(1)" class="btn-qty" style="width:25px; height:25px;">+</button>
+        </div>
+    </div>
+</div>
+
+
+
+            <div class="total-section">
+                總計金額: <span id="total-price" style="color: #e76f51;">NT$ 0</span>
+            </div>
+            <button id="btn-submit" disabled onclick="sendOrder()">提交訂單</button>
+        </div>
+    </div>
+
+    <div id="custom-modal" class="modal">
+        <div class="modal-content text-left">
+            <h3 id="custom-product-name" style="margin-top: 0; color: #6f4e37; border-bottom: 2px solid #6f4e37; padding-bottom: 8px;">規格客製化</h3>
+            
+            <div class="custom-group" id="temp-group">
+                <label><strong>溫度調整：</strong></label>
+                <select id="modal-temp-select" class="custom-select-box" onchange="onModalTempChange()">
+                    <option value="熱">熱 (Hot)</option>
+                    <option value="冰">冰 (Ice)</option>
+                </select>
+            </div>
+
+            <div class="custom-group" id="ice-group" style="display: none;">
+                <label><strong>冰塊量：</strong></label>
+                <select id="modal-ice-select" class="custom-select-box">
+                    <option value="正常冰">正常冰</option>
+                    <option value="少冰">少冰</option>
+                    <option value="微冰">微冰</option>
+                    <option value="去冰">去冰</option>
+                </select>
+            </div>
+
+            <div class="custom-group" id="sweet-group" style="display: none;">
+                <label><strong>甜度調整：</strong></label>
+                <select id="modal-sweet-select" class="custom-select-box">
+                    <option value="正常糖">正常糖</option>
+                    <option value="7分糖">7分糖</option>
+                    <option value="半糖">半糖</option>
+                    <option value="3分糖">3分糖</option>
+                    <option value="無糖">無糖</option>
+                </select>
+            </div>
+
+            <div class="custom-group" id="espresso-group" style="display: none;">
+                <label><strong>咖啡濃縮度：</strong></label>
+                <div class="radio-options">
+                    <label><input type="radio" name="espresso-option" value="標準" checked> 標準</label>
+                    <label><input type="radio" name="espresso-option" value="特濃"> 特濃 (+NT$ 15)</label>
+                </div>
+            </div>
+
+            <div class="custom-group" id="milk-group" style="display: none;">
+                <label><strong>牛奶類別：</strong></label>
+                <div class="radio-options">
+                    <label><input type="radio" name="milk-option" value="全脂鮮乳" checked> 全脂鮮乳</label>
+                    <label><input type="radio" name="milk-option" value="燕麥奶"> 燕麥奶 (+NT$ 20)</label>
+                </div>
+            </div>
+
+            <div class="custom-group" style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="margin: 0;"><strong>數量：</strong></label>
+                <div class="quantity-control">
+                    <button onclick="changeModalQty(-1)" class="btn-qty">-</button>
+                    <span id="modal-qty-display" style="font-weight: bold; margin: 0 10px;">1</span>
+                    <button onclick="changeModalQty(1)" class="btn-qty">+</button>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button onclick="closeCustomModal()" style="background: #95a5a6;">返回選單</button>
+                <button onclick="confirmAddToCart()" style="background: #27ae60;">確認加入</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="status-tracker-modal" class="modal">
+        <div class="modal-content text-left">
+            <h3 style="margin-top: 0; color: #6f4e37; border-bottom: 2px solid #6f4e37; padding-bottom: 8px;">📋 我的訂單即時進度</h3>
+            <div id="tracker-container" style="margin: 15px 0;"></div>
+            <button onclick="toggleModal('status-tracker-modal', false)" style="background: #95a5a6; margin-top: 10px;">關閉視窗</button>
+        </div>
+    </div>
+
+    <div id="faq-modal" class="modal">
+    <div class="modal-content text-left" style="width: 480px; max-height: 85vh; display: flex; flex-direction: column; padding: 20px;">
+        <h3 style="margin-top: 0; color: #6f4e37; border-bottom: 2px solid #6f4e37; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <span>🤖 咖啡快閃店 - AI 智慧客服</span>
+            <span style="font-size: 0.8rem; color: #e76f51; background: #fdf2f2; padding: 2px 8px; border-radius: 4px;">咖啡限定</span>
+        </h3>
+        
+        <div id="ai-chat-flow" style="flex-grow: 1; min-height: 300px; max-height: 380px; overflow-y: auto; background: #faf8f5; border: 1px solid #f3ebe1; border-radius: 8px; padding: 12px; margin-bottom: 12px; font-size: 0.95rem;">
+            <div style="margin-bottom: 10px; text-align: left;">
+                <span style="background: #e76f51; color: white; padding: 6px 12px; border-radius: 12px 12px 12px 0; display: inline-block; max-width: 85%; line-height: 1.4;">
+                    嗨！我是這間快閃咖啡廳的 AI 智能助理 ☕<br>
+                    您可以直接輸入問題，或點選下方快捷發問：<br>
+                    ✨ <strong>原物料溯源</strong> (如：鮮奶品牌、咖啡豆產地)<br>
+                    🕒 <strong>營業時間與位置</strong><br>
+                    👍 <strong>推薦招牌商品</strong>
+                </span>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
+            <button type="button" onclick="quickAsk('你們營業時間到幾點？')" style="width:auto; font-size:0.75rem; background:#f5ebe0; color:#6f4e37; padding:4px 10px; border:1px solid #6f4e37;">🕒 營業時間</button>
+            <button type="button" onclick="quickAsk('咖啡豆是哪裡的？')" style="width:auto; font-size:0.75rem; background:#f5ebe0; color:#6f4e37; padding:4px 10px; border:1px solid #6f4e37;">☕ 咖啡豆來源</button>
+            <button type="button" onclick="quickAsk('推薦什麼招牌點心或飲料？')" style="width:auto; font-size:0.75rem; background:#f5ebe0; color:#6f4e37; padding:4px 10px; border:1px solid #6f4e37;">👍 推薦什麼</button>
+            <button type="button" onclick="quickAsk('鮮奶是用哪一牌的？')" style="width:auto; font-size:0.75rem; background:#f5ebe0; color:#6f4e37; padding:4px 10px; border:1px solid #6f4e37;">🥛 鮮奶品牌</button>
+        </div>
+
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="ai-user-input" placeholder="請輸入您想詢問的問題..." style="margin-bottom: 0; flex-grow: 1;" onkeypress="if(event.keyCode==13) sendAiMessage()">
+            <button type="button" onclick="sendAiMessage()" style="width: auto; background: #6f4e37; padding: 10px 18px;">發送</button>
+        </div>
+        
+        <button type="button" onclick="toggleModal('faq-modal', false)" style="background: #2c3e50; margin-top: 12px; padding: 8px;">結束對話</button>
+    </div>
+</div>
+
+
+
+
+
+    <div id="order-modal" class="modal">
+        <div class="modal-content">
+            <div style="font-size: 50px; color: #27ae60;">✔</div>
+            <h2 style="color: #27ae60;">訂單送出成功！</h2>
+            <p>您的訂單已成功建立，請前往櫃檯結帳並等候叫號</p>
+            <p>您的取餐號碼</p>
+            <h1 id="order-id" style="font-size: 4rem; color: #e76f51; margin: 15px 0;">#000</h1>
+            <div style="background: #fdf2f2; padding: 15px; border-radius: 8px; text-align: left;">
+                <strong>取餐須知：</strong>
+                <ul style="padding-left: 20px; font-size: 0.9rem;">
+                    <li>請保存好您的取餐號碼</li>
+                    <li>當號碼被叫到時，請出示此畫面</li>
+                    <li>預估等候時間：10-15分鐘</li>
+                </ul>
+            </div>
+            <button onclick="closeModal()" style="margin-top: 20px; background: #27ae60;">繼續點餐</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
